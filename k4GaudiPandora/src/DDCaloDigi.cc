@@ -39,12 +39,11 @@
 #include "DD4hep/DetType.h"
 #include "DD4hep/Factories.h"
 #include "DDRec/DetectorData.h"
-#include "DDRec/DetectorData.h"
 #include "DDRec/MaterialManager.h"
 
 using namespace std;
-using namespace dd4hep ;
-using namespace DDSegmentation ;
+using namespace dd4hep;
+using namespace DDSegmentation;
 
 // protect against rounding errors
 // will not find caps smaller than this
@@ -55,7 +54,8 @@ const float slop = 0.25;  // (mm)
 DECLARE_COMPONENT(DDCaloDigi)
 
 DDCaloDigi::DDCaloDigi(const std::string& aName, ISvcLocator* aSvcLoc)
-    : MultiTransformer(aName, aSvcLoc,
+    : MultiTransformer(
+          aName, aSvcLoc,
           {
               KeyValues("SimCaloHitCollections", {"SimCalorimeterHitCollection1", "SimCalorimeterHitCollection2",
                                                   "SimCalorimeterHitCollection3"}),
