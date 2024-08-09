@@ -39,7 +39,6 @@
 #include "DD4hep/DetType.h"
 #include "DD4hep/Factories.h"
 #include "DDRec/DetectorData.h"
-#include "DDRec/DetectorData.h"
 #include "DDRec/MaterialManager.h"
 
 using namespace std;
@@ -60,7 +59,7 @@ dd4hep::rec::LayeredCalorimeterData* getExtension(unsigned int includeFlag, unsi
 DDCaloDigi::DDCaloDigi(const std::string& aName, ISvcLocator* aSvcLoc)
     : MultiTransformer(aName, aSvcLoc,
           {
-              KeyValues("SimCaloHitCollections", {"SimCalorimeterHitCollection1","SimCalorimeterHitCollection2","SimCalorimeterHitCollection3"}),
+              KeyValues("SimCaloHitCollections", {"SimCalorimeterHitCollection1"}),
               KeyValues("HeaderName", {"EventHeader"}),
           },
           {
@@ -250,17 +249,17 @@ StatusCode DDCaloDigi::initialize() {
 }
 
 retType DDCaloDigi::operator()(       
-    const std::map<std::string, const edm4hep::SimCalorimeterHitCollection&>& simCaloHitCollections,
-    const std::map<std::string, const edm4hep::EventHeaderCollection&>& eventHeaders) const {
-    auto const& headers = eventHeaders.at("FIXME");
-  debug() << " process event : " << headers[0].getEventNumber() << " - run  " << headers[0].getRunNumber()
+    const edm4hep::SimCalorimeterHitCollection& simCaloHitCollections,
+    const edm4hep::EventHeaderCollection& eventHeaders) const {
+    auto const& headers = eventHeaders.at(0); //FIXME maybe
+  debug() << " process event : " << headers.getEventNumber() << " - run  " << headers.getRunNumber()
 
           << endmsg;  // headers[0].getRunNumber(),headers[0].getEventNumber()
 
   //auto chschcol = edm4hep::CalorimeterHitCollection(); //collection
-  std::map<std::string, edm4hep::CalorimeterHitCollection> outputCollections;
-  std::map<std::string, edm4hep::MCRecoCaloAssociationCollection> outputRelations;
-  auto& Relcol = outputRelations["newRelation"];  // Relation collection CalorimeterHit, SimCalorimeterHit
+  edm4hep::CalorimeterHitCollection outputCollections;
+  edm4hep::CaloHitSimCaloHitLinkCollection outputRelations;
+  auto& Relcol = outputRelations;  // Relation collection CalorimeterHit-SimCalorimeterHit
 
   // copy the flags from the input collection
   //_flag.setBit(LCIO::CHBIT_LONG);
@@ -271,16 +270,13 @@ retType DDCaloDigi::operator()(
   //
   // * Reading Collections of ECAL Simulated Hits *
   //
-
-  for (auto const& inputPair : simCaloHitCollections) {
-    std::string colName                = inputPair.first;
-    auto&       ecalCol                = outputCollections["new" + colName];
-    auto const& inputCaloHitCollection = inputPair.second;  // (or is it ->second ??)
-      debug() << "looking for collection: " << colName << endl;
+  std::string colName = "SimCaloHitCollection"; //FIXME - take from property?
+  auto&       ecalCol = outputCollections; //"new" + colName
+  auto const& inputCaloHitCollection = simCaloHitCollections;
+    debug() << "looking for collection: " << colName << endl;
 
     if (colName.find("dummy") != string::npos) {
       debug() << "ignoring input ECAL collection name (looks like dummy name)" << colName << endl;
-      continue;
     }
 
     //fg: need to establish the subdetetcor part here
@@ -484,8 +480,8 @@ retType DDCaloDigi::operator()(
 
                     // Set relation with LCRelationNavigator
                     auto caloRel = Relcol.create();
-                    caloRel.setRec(calHit);
-                    caloRel.setSim(hit);
+                    caloRel.setFrom(calHit);
+                    caloRel.setTo(hit);
                     // calohitNav.addRelation(calhit, hit, 1.0);
 
                   } else {
@@ -519,8 +515,8 @@ retType DDCaloDigi::operator()(
 
             // Set relation with LCRelationNavigator
             auto caloRel = Relcol.create();
-            caloRel.setRec(calHit);
-            caloRel.setSim(hit);
+            caloRel.setFrom(calHit);
+            caloRel.setTo(hit);
             //calohitNav.addRelation(calhit, hit, 1.0);
           }  // timing if...else
 
@@ -532,12 +528,11 @@ retType DDCaloDigi::operator()(
         this->fillECALGaps(_calHitsByStaveLayer, _calHitsByStaveLayerModule);
       // add ECAL collection to event
       // ecalcol->parameters().setValue(LCIO::CellIDEncoding,initString);
-      std::map<std::string, edm4hep::MCRecoCaloAssociationCollection> caloRelMap;
+      edm4hep::CaloHitSimCaloHitLinkCollection caloRelMap;
       caloRelMap["newAssoc"] = std::move(Relcol);
       return std::make_tuple(std::move(outputCollections), std::move(caloRelMap));
       //evt->addCollection(ecalcol,_outputEcalCollections[i].c_str());
-  } // loop over ecal collections
-  //}
+  
 
   if (_histograms) {
     // fill normalisation of HCAL occupancy plots
@@ -564,15 +559,13 @@ retType DDCaloDigi::operator()(
   // * Reading HCAL Collections of Simulated Hits *
   //
 
-  for (auto const& inputPair : simCaloHitCollections) {
-    std::string colName                = inputPair.first;
-    auto&       hcalCol                = outputCollections["new" + colName];
-    auto const& inputCaloHitCollection = inputPair.second;  // (or is it ->second ??)
+
+    auto&       hcalCol                = outputCollections; //"new" + colName
+    auto const& inputCaloHitCollection = simCaloHitCollections;
       debug() << "looking for collection: " << colName << endl;
 
     if (colName.find("dummy") != string::npos) {
       debug() << "ignoring input HCAL collection name (looks like dummy name)" << colName << endl;
-      continue;
     }
 
     //fg: need to establish the subdetetcor part here
@@ -718,8 +711,8 @@ retType DDCaloDigi::operator()(
                     calHit.setType(CHT(CHT::had, CHT::hcal, caloLayout, layer));
                     // Set relation with LCRelationNavigator
                     auto hcaloRel = Relcol.create();
-                    hcaloRel.setRec(calHit);
-                    hcaloRel.setSim(hit);
+                    hcaloRel.setFrom(calHit);
+                    hcaloRel.setTo(hit);
                     //calohitNav.addRelation(calhit, hit, 1.0);
 
                   } else {
@@ -750,8 +743,8 @@ retType DDCaloDigi::operator()(
             //calHit.setRawHit(hit);
 
             //auto hcaloRel = Relcol.create();
-            hcaloRel.setRec(calHit);
-            hcaloRel.setSim(hit);
+            hcaloRel.setFrom(calHit);
+            hcaloRel.setTo(hit);
           }
 
           // std::cout << hit->getTimeCont(0) << " count = " << count <<  " EHCAL = " << energyCal << " - " << eCellInTime << " - " << eCellOutput << std::endl;
@@ -760,8 +753,7 @@ retType DDCaloDigi::operator()(
       // add HCAL collection to event
       // hcalcolparameters().setValue(LCIO::CellIDEncoding,initString);
       // evt->addCollection(hcalcol,_outputHcalCollections[i].c_str());
-  }//all CaloHitCollections
-
+  
   // Create and add relation collection for ECAL/HCAL to event
   //chschcol = calohitNav.createLCCollection();
   // evt->addCollection(chschcol,_outputRelCollection.c_str());

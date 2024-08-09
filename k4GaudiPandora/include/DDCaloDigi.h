@@ -2,11 +2,10 @@
 #define DDCCALODIGI_H 1
 
 #include "Gaudi/Property.h"
-#include "GaudiAlg/Transformer.h"
 #include "edm4hep/SimCalorimeterHitCollection.h"
 #include "edm4hep/CalorimeterHitCollection.h"
 #include "edm4hep/EventHeaderCollection.h"
-#include "edm4hep/MCRecoCaloAssociationCollection.h"
+#include "edm4hep/CaloHitSimCaloHitLinkCollection.h"
 #include "k4FWCore/BaseClass.h"
 #include "k4FWCore/Transformer.h"
 #include "k4FWCore/MetaDataHandle.h"
@@ -86,11 +85,11 @@ const int MAX_LAYERS = 200;
 const int MAX_STAVES =  16;
 
 using retType = std::tuple<
-    std::map<std::string, edm4hep::CalorimeterHitCollection>,
-    std::map<std::string, edm4hep::MCRecoCaloAssociationCollection>>;
+    edm4hep::CalorimeterHitCollection,
+    edm4hep::CaloHitSimCaloHitLinkCollection>;
 
-using SimCaloHitColl = std::map<std::string, const edm4hep::SimCalorimeterHitCollection&>;
-using EventHeaderColl = std::map<std::string, const edm4hep::EventHeaderCollection&>;
+using SimCaloHitColl = const edm4hep::SimCalorimeterHitCollection&;
+using EventHeaderColl = const edm4hep::EventHeaderCollection&;
 
 using DDCaloDigi_t = k4FWCore::MultiTransformer<retType(const SimCaloHitColl&, const EventHeaderColl&)>;
 
@@ -103,8 +102,8 @@ struct DDCaloDigi final
   StatusCode finalize() override;
 
   retType operator()(
-        const std::map<std::string, const edm4hep::SimCalorimeterHitCollection&>&, 
-        const std::map<std::string, const edm4hep::EventHeaderCollection&>&) const;
+        const edm4hep::SimCalorimeterHitCollection&, 
+        const edm4hep::EventHeaderCollection&) const;
 
    private:
 
