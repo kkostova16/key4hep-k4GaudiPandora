@@ -38,7 +38,7 @@ find_package(PandoraSDK)
 find_package(LCContent)
 find_package(Gaudi)
 find_package(DD4hep)
-find_package(CLHEP)
+find_package(CLHEP REQUIRED)
 
 #---------------------------------------------------------------
 
