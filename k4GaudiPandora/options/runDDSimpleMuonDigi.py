@@ -53,7 +53,7 @@ digi.detectornameB = "YokeBarrel"
 digi.detectornameE = "YokeEndcap"
 
 iosvc = IOSvc()
-iosvc.input = "../simulation/sim_partgun_1000.root"
+iosvc.input = "../simulation/sim_partgun_mu_1000_60-120deg.root"
 iosvc.output = "../outputfiles/output_Gaudi.root"
 
 hps = RootHistSvc("HistogramPersistencySvc")

@@ -106,7 +106,9 @@ std::tuple<edm4hep::CalorimeterHitCollection, edm4hep::CaloHitSimCaloHitLinkColl
   CHT::Layout caloLayout = layoutFromString(colName);
 
   //auto col   = headers[0].getCollection(m_muonCollections[i].c_str());
-  initString = m_geoSvc->constantAsString(m_encodingStringVariable.value());
+  //initString = m_geoSvc->constantAsString(m_encodingStringVariable.value());
+  //FIXME: take this from the metadata
+  initString = "system:5,side:2,module:8,stave:4,layer:9,submodule:4,x:32:-16,y:-16";
   dd4hep::DDSegmentation::BitFieldCoder bitFieldCoder(initString);  // check!
   // check if decoder contains "layer"
 
