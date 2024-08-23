@@ -37,24 +37,28 @@ geoservice.EnableGeant4Geo = False
 calodigi = [DDCaloDigi("ECALBarrelDigi"),
             DDCaloDigi("ECALEndcapDigi"),
             DDCaloDigi("HCALBarrelDigi"),
-            DDCaloDigi("HCALEndcapDigi")]
+            DDCaloDigi("HCALEndcapDigi"),
+            DDCaloDigi("HCALRingDigi")]
 
-ECALorHCAL = [True, True, False, False]
+ECALorHCAL = [True, True, False, False, False]
 
 inputcollections = [["ECalBarrelCollection"],
                     ["ECalEndcapCollection"],
                     ["HCalBarrelCollection"],
-                    ["HCalEndcapCollection"]]
+                    ["HCalEndcapCollection"],
+                    ["HCalRingCollection"]]
 
 outputcollections = [["ECALBarrel"],
                      ["ECALEndcap"],
                      ["HCALBarrel"],
-                     ["HCALEndcap"]]
+                     ["HCALEndcap"],
+                     ["HCALRing"]]
 
 relcollections = [["RelationCaloHitECALBarrel"],
                   ["RelationCaloHitECALEndcap"],
                   ["RelationCaloHitHCALBarrel"],
-                  ["RelationCaloHitHCALEndcap"]]
+                  ["RelationCaloHitHCALEndcap"],
+                  ["RelationCaloHitHCALRing"]]
 
 #set properties
 for calodigicol, ecalorhcal, inputcol, outputcol, relcol in zip(calodigi, ECALorHCAL, inputcollections, outputcollections, relcollections):
@@ -156,7 +160,8 @@ root_hist_svc.FileName = "../outputfiles/DDCaloDigi/ddcalodigi_hist.root"
 ApplicationMgr(TopAlg=[calodigi[0],
                        calodigi[1],
                        calodigi[2],
-                       calodigi[3]],
+                       calodigi[3],
+                       calodigi[4]],
                EvtSel="NONE",
                EvtMax=-1,
                ExtSvc=[EventDataSvc("EventDataSvc"), root_hist_svc],
