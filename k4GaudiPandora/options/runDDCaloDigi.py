@@ -91,8 +91,6 @@ for calodigicol, ecalorhcal, inputcol, outputcol, relcol in zip(calodigi, ECALor
     calodigicol.ECALModuleGapCorrectionFactor = 0.0
     calodigicol.HCALModuleGapCorrectionFactor = 0.5
 
-    calodigicol.Histograms = 0
-
     # timing parameters for ECAL
     calodigicol.UseEcalTiming = 1
     calodigicol.ECALCorrectTimesForPropagation = 1 
