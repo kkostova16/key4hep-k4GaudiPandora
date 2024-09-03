@@ -35,20 +35,20 @@ DDScintillatorPpdDigi::DDScintillatorPpdDigi() {}
 
 void DDScintillatorPpdDigi::printParameters() {
   cout << "--------------------------------" << endl;
-  cout << "DDScintillatorPpdDigi parameters" << endl;
-  cout << " PEperMIP   = " << m_PEperMIP << endl;
-  cout << " calibMIP    = " << m_calibMIP << endl;
-  cout << " Npix         = " << m_Npix << endl;
-  cout << " misCalibNpix = " << m_misCalibNpix << endl;
-  cout << " pixSpread    = " << m_pixSpread << endl;
-  cout << " elecDynRange = " << m_elecMaxDynRange_MIP << endl;
-  cout << " elecNoise    = " << m_elecNoise << endl;
+  cout << " DDScintillatorPpdDigi parameters " << endl;
+  cout << " PEperMIP        = " << m_PEperMIP << endl;
+  cout << " calibrationMIP  = " << m_calibMIP << endl;
+  cout << " Npixels         = " << m_Npix << endl;
+  cout << " misCalibNpix    = " << m_misCalibNpix << endl;
+  cout << " pixSpread       = " << m_pixSpread << endl;
+  cout << " elecNoise       = " << m_elecNoise << endl;
+  cout << " elecMaxDynRange = " << m_elecMaxDynRange << endl;
   cout << "--------------------------------" << endl;
   return;
 }
 
 float DDScintillatorPpdDigi::getDigitisedEnergy(float energy) {
-  float correctedEnergy(energy);
+  float correctedEnergy = energy;
 
   if (m_PEperMIP <= 0 || m_calibMIP <= 0 || m_Npix <= 0) {
     cout << "ERROR, crazy parameters for DDScintillatorPpdDigi: PE/MIP = " << m_PEperMIP << ", MIP calibration = " << m_calibMIP
@@ -100,10 +100,10 @@ float DDScintillatorPpdDigi::getDigitisedEnergy(float energy) {
       Npe *= CLHEP::RandGauss::shoot(1., m_pixSpread / sqrt(Npe));
     }
 
-    if (m_elecMaxDynRange_MIP > 0) {
+    if (m_elecMaxDynRange > 0) {
       // limited dynamic range of readout electronics
       // Daniel moved this here, before the unfolding of saturation (September 2015)
-      Npe = std::min(Npe, m_elecMaxDynRange_MIP * m_PEperMIP);
+      Npe = std::min(Npe, m_elecMaxDynRange * m_PEperMIP);
     }
 
     if (m_elecNoise > 0) {

@@ -19,6 +19,8 @@
 #ifndef DDSCINTILLATORPPDDIGI_H
 #define DDSCINTILLATORPPDDIGI_H
 
+#include "Gaudi/Property.h"
+
 class DDScintillatorPpdDigi {
 public:
   DDScintillatorPpdDigi();
@@ -43,20 +45,21 @@ public:
   void setElecNoise(float x) { m_elecNoise = x; }
 
   // electronics dynamic range (in MIP units)
-  void setElecRange(float x) { m_elecMaxDynRange_MIP = x; }
-
-  float getDigitisedEnergy(float energy);
+  void setElecRange(float x) { m_elecMaxDynRange = x; }
 
   void printParameters();
 
+  float getDigitisedEnergy(float energy);
+
 private:
-  float m_PEperMIP          = -99;
-  float m_calibMIP           = -99;
-  float m_Npix                = -99;
-  float m_misCalibNpix        = 0;
-  float m_pixSpread           = 0;
-  float m_elecNoise           = 0;
-  float m_elecMaxDynRange_MIP = 0;
+
+  Gaudi::Property<float> m_PEperMIP{this, "PPD_PE_per_MIP", {7.0}, "# photoelectrons per MIP (scintillator): used to poisson smear #PEs if > 0"};
+  Gaudi::Property<float> m_calibMIP{this, "CalibrationMIP", {1.0e-4}, "Calibration to convert deposited energy to MIPs"};
+  Gaudi::Property<int>   m_Npix{this, "PPD_NPixels", {10000}, "Total number of MPPC/SiPM pixels for implementation of saturation effect"};
+  Gaudi::Property<float> m_misCalibNpix{this, "PPD_NPixels_uncertainty", {0.05}, "Fractional uncertainty of effective total number of MPPC/SiPM pixels"};
+  Gaudi::Property<float> m_pixSpread{this, "PixelSpread", {0.05}, "Variation of MPPC/SiPM pixels capacitance in ECAL/HCAL (as a fraction: 0.01=1%)"};
+  Gaudi::Property<float> m_elecNoise{this, "ElectronicsNoise_MIP", {0.0}, "Typical electronics noise (in MIP units)"};
+  Gaudi::Property<float> m_elecMaxDynRange{this, "ElectronicsMaxDynamicRange_MIP", {2500.0}, "Maximum of electronis dynamic range (in MIP units)"};
 };
 
 #endif
