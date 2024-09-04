@@ -33,12 +33,8 @@ DECLARE_COMPONENT(DDScintillatorPpdDigi)
 // Daniel Jeans, Jan/Feb 2014.
 // (split off from ILDCaloDigi Aug'14.)
 
-DDScintillatorPpdDigi::DDScintillatorPpdDigi(const std::string& aName, ISvcLocator* aSvcLoc) 
-  : Gaudi::Algorithm(aName, aSvcLoc) {}
-
-StatusCode DDScintillatorPpdDigi::execute(const EventContext&) const {
-  return StatusCode::SUCCESS;
-}
+DDScintillatorPpdDigi::DDScintillatorPpdDigi(const std::string& name, ISvcLocator* svcLoc) 
+  : DDScCaloDigi(name, svcLoc) {}
 
 void DDScintillatorPpdDigi::printParameters() {
   cout << "--------------------------------" << endl;

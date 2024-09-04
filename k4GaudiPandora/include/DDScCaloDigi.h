@@ -32,8 +32,6 @@
 #include "k4Interface/IUniqueIDGenSvc.h"
 
 #include "CalorimeterHitType.h"
-#include "DDScintillatorPpdDigi.h"
-#include "DDSiliconDigi.h"
 
 #include "TFile.h"
 #include "TH1.h"
@@ -111,8 +109,7 @@ using DDCaloDigi_t = k4FWCore::MultiTransformer<retType(
                               const edm4hep::SimCalorimeterHitCollection&,
                               const edm4hep::EventHeaderCollection&)>;
 
-struct DDScCaloDigi final
-  : DDCaloDigi_t {
+struct DDScCaloDigi : public DDCaloDigi_t {
   DDScCaloDigi(const std::string& name, ISvcLocator* svcLoc);
 
   StatusCode initialize() override;
@@ -155,14 +152,22 @@ struct DDScCaloDigi final
     "Use simple time window cut on hit times? If false: use original hit-time clustering algorithm. If true: use time window defined by BarrelTimeWindowMin and BarrelTimeWindowMax"};
   
   // parameters for extra digitization effects
-  //Gaudi::Property<float> m_calibMip{this, "CalibMIP", {1.0e-4}, "Calibration to convert deposited energy to MIPs"};
   
   // !!!
   Gaudi::Property<int> m_applyEcalDigi{this, "ECALApplyRealisticDigi", {0}, "Apply realistic digitisation to ECAL hits? (0=none, 1=silicon, 2=scintillator)"};
+  Gaudi::Property<int> m_applyHcalDigi{this, "HCALApplyRealisticDigi", {0}, "Apply realistic digitisation to HCAL hits? (0=none, 1=silicon, 2=scintillator)"};
 
-  //Gaudi::Property<float> m_PPD_pe_per_mip{this, "PPD_PE_per_MIP", {7.0}, "# photoelectrons per MIP (in scintillator): used to poisson smear #PEs if > 0"};
-  //Gaudi::Property<int> m_PPD_n_pixels{this, "PPD_N_Pixels", {10000}, "Total number of MPPC/SiPM pixels for implementation of saturation effect"};
-  //Gaudi::Property<float> m_misCalibNpix{this, "PPD_N_Pixels_uncertainty", {0.05}, "Fractional uncertainty of effective total number of MPPC/SiPM pixels"};
+  // silicon properties -- DDSiliconDigi
+  Gaudi::Property<float> m_ehEnergy{};
+  Gaudi::Property<float> m_elecMaxDynRange{};
+  Gaudi::Property<float> m_elecNoise{};
+  Gaudi::Property<float> m_calibMIP{}; 
+  // scintillator properties -- DDScintillatorPpdDigi
+  Gaudi::Property<float> m_PEperMIP{}; 
+  Gaudi::Property<int> m_Npix{}; 
+  Gaudi::Property<float> m_misCalibNpix{}; 
+  Gaudi::Property<float> m_pixSpread{};
+
   Gaudi::Property<float> m_misCalib_uncorrel{this, "Miscalibration_uncorrel", {0.0}, "Uncorrelated random gaussian miscalibration (as a fraction: 1.0 = 100%)"};
   Gaudi::Property<bool> m_misCalib_uncorrel_keep{this, "Miscalibration_uncorrel_memorise", {false}, "Store uncorrelated miscalbrations in memory? (WARNING: Can take a lot of memory if used...)"};
   Gaudi::Property<float> m_misCalib_correl{this, "Miscalibration_correl", {0.0}, "Correlated random gaussian miscalibration (as a fraction: 1.0 = 100%)"};
@@ -171,17 +176,9 @@ struct DDScCaloDigi final
 
   Gaudi::Property<float> m_strip_abs_length{this, "StripAbsorbtionLength", {1000000.0}, "Length scale for absorbtion along scintillator strip (mm)"};
 
-  //Gaudi::Property<float> m_pixSpread{this, "PixelSpread", {0.05}, "Variation of MPPC/SiPM pixels capacitance in ECAL/HCAL (as a fraction: 0.01=1%)"};
-  //Gaudi::Property<float> m_elecNoise{this, "ElecNoise_MIPs", {0.0}, "Typical electronics noise for ECAL/HCAL (in MIP units)"};
-
-  //Gaudi::Property<float> m_ehEnergy{this, "energyPerEHpair", {3.6}, "Energy required to create e-h pair in silicon (in eV)"};
-  //Gaudi::Property<float> m_maxDynRangeMIP{this, "MaxDynamicRange_MIP", {2500.0}, "Maximum of electronis dynamic range for ECAL/HCAL (in MIPs)"};
   Gaudi::Property<int> m_strip_default_nVirt{this, "Strip_default_nVirtualCells", {9}, "Default number of virtual cells (used if not found in gear file)"};
   Gaudi::Property<std::string> m_deafult_layer_config{this, "DefaultLayerConfig", {"000000000000000"}, "Default ECAL/HCAL layer configuration (used if not found in gear file"};
   
-  // !!!
-  Gaudi::Property<int> m_applyHcalDigi{this, "HCALApplyRealisticDigi", {0}, "Apply realistic digitisation to HCAL hits? (0=none, 1=silicon, 2=scintillator)"};
-
   //Gaudi::Property<std::string> m_encodingStringVariable{this, "EncodingStringParameterName", "GlobalTrackerReadoutID",
       //"The name of the DD4hep constant that contains the Encoding string for tracking detectors"};
   
@@ -206,6 +203,13 @@ struct DDScCaloDigi final
   std::pair<int, int> getLayerProperties(std::string const& colName, int layer) const;
   int getStripOrientationFromColName(std::string const& colName) const;
 
+  // defined in DDSiliconDigi:
+  float siliconDigi(float energy) const;
+
+  // defined in DDScintillatorPpdDigi:
+  void printParameters();
+  float convertThresholdUnits(std::string unitThreshold, float threshold) const;
+  float getDigitisedEnergy(float energy) const;
 
   int nRun = 0;
   int nEvt = 0;
@@ -218,8 +222,8 @@ struct DDScCaloDigi final
   float m_endcapPixelSizeY[MAX_LAYERS];
   float m_barrelStaveDir[MAX_STAVES][2];
 
-  std::unique_ptr<DDScintillatorPpdDigi> m_scDigi{};
-  std::unique_ptr<DDSiliconDigi> m_siDigi{};
+  //std::unique_ptr<DDScintillatorPpdDigi> m_scDigi{};
+  //std::unique_ptr<DDSiliconDigi> m_siDigi{};
 
   // internal variables
   int m_strip_virt_cells = 999;

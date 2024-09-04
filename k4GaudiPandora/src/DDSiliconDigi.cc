@@ -17,18 +17,13 @@
  * limitations under the License.
  */
 #include "DDSiliconDigi.h"
-
 #include "CLHEP/Random/RandGauss.h"
 #include "CLHEP/Random/RandPoisson.h"
 
 DECLARE_COMPONENT(DDSiliconDigi)
 
-DDSiliconDigi::DDSiliconDigi(const std::string& aName, ISvcLocator* aSvcLoc) 
-  : Gaudi::Algorithm(aName, aSvcLoc) {}
-
-StatusCode DDSiliconDigi::execute(const EventContext&) const {
-  return StatusCode::SUCCESS;
-}
+DDSiliconDigi::DDSiliconDigi(const std::string& name, ISvcLocator* svcLoc) 
+  : DDScCaloDigi(name, svcLoc) {}
 
 // this applies extra digitisation to silicon hits
 float DDSiliconDigi::siliconDigi(float energy) const {
@@ -40,8 +35,8 @@ float DDSiliconDigi::siliconDigi(float energy) const {
   float smeared_energy = energy * CLHEP::RandPoisson::shoot(nehpairs) / nehpairs;
 
   // limited electronics dynamic range // Daniel moved electronics dyn range to here
-  if (m_maxDynRangeMIP > 0)
-    smeared_energy = std::min(smeared_energy, m_maxDynRangeMIP * m_calibMIP);
+  if (m_elecMaxDynRange > 0)
+    smeared_energy = std::min(smeared_energy, m_elecMaxDynRange * m_calibMIP);
 
   // add electronics noise
   if (m_elecNoise > 0)

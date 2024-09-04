@@ -19,36 +19,34 @@
 #ifndef DDSCINTILLATORPPDDIGI_H
 #define DDSCINTILLATORPPDDIGI_H
 
-#include "Gaudi/Algorithm.h"
+#include "DDScCaloDigi.h"
 #include "Gaudi/Property.h"
 
-class DDScintillatorPpdDigi : public Gaudi::Algorithm {
+class DDScintillatorPpdDigi final : public DDScCaloDigi {
 public:
-  explicit DDScintillatorPpdDigi(const std::string&, ISvcLocator*);
+  DDScintillatorPpdDigi(const std::string& name, ISvcLocator* svcLoc);
   //~DDScintillatorPpdDigi() {}
 
-  StatusCode execute(const EventContext&) const final;
-
   // expected # photoelectrons / MIP
-  void setPEperMIP(float x) { m_PEperMIP = x; }
+  //void setPEperMIP(float x) { m_PEperMIP = x; }
 
   // calibration factor from input hit energy to MIPs
-  void setCalibMIP(float x) { m_calibMIP = x; }
+  //void setCalibMIP(float x) { m_calibMIP = x; }
 
   // # pixels of PPD
-  void setNPix(int x) { m_Npix = x; }
+  //void setNPix(int x) { m_Npix = x; }
 
   // random miscalibration of total # pixels (as a fraction of pixel number: 0.05 = 5% miscalibration)
-  void setRandomMisCalibNPix(float x) { m_misCalibNpix = x; }
+  //void setRandomMisCalibNPix(float x) { m_misCalibNpix = x; }
 
   // spread in pixel capacitance (as a fraction: 0.05 = 5% spread)
-  void setPixSpread(float x) { m_pixSpread = x; }
+  //void setPixSpread(float x) { m_pixSpread = x; }
 
   // electronics noise (in MIP units)
-  void setElecNoise(float x) { m_elecNoise = x; }
+  //void setElecNoise(float x) { m_elecNoise = x; }
 
   // electronics dynamic range (in MIP units)
-  void setElecRange(float x) { m_elecMaxDynRange = x; }
+  //void setElecRange(float x) { m_elecMaxDynRange = x; }
 
   void printParameters();
 

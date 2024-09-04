@@ -165,7 +165,7 @@ StatusCode DDScCaloDigi::initialize() {
 
   
   // Set up the scintillator/MPPC digitizer
-  m_scDigi = std::unique_ptr<DDScintillatorPpdDigi>(new DDScintillatorPpdDigi("scinti", svcLoc())); 
+  //m_scDigi = std::unique_ptr<DDScintillatorPpdDigi>(new DDScintillatorPpdDigi()); 
   //m_scDigi->setPEperMIP(m_PEperMIP);
   //m_scDigi->setCalibMIP(m_calibMIP);
   //m_scDigi->setNPix(m_Npix);
@@ -174,10 +174,10 @@ StatusCode DDScCaloDigi::initialize() {
   //m_scDigi->setElecNoise(m_elecNoise);
   //m_scDigi->setElecRange(m_elecMaxDynRange);
   cout << "Scintillator digi:" << endl;
-  m_scDigi->printParameters();
+  printParameters();
   
   // Convert thresholds to GeV units
-  m_scDigi->convertThresholdUnits(m_unitThreshold, m_threshold);
+  m_threshold = convertThresholdUnits(m_unitThreshold, m_threshold);
 
 
   // Set up the random engines for ECAL/HCAL dead cells: (could use a steering parameter though)
@@ -804,20 +804,20 @@ float DDScCaloDigi::EnergyDigi(float energy, int id) const {
   if (m_inputColIsECAL) { // input collection is ECAL
   // some extra digi effects (daniel)
   // controlled by m_applyEcalDigi = 0 (none), 1 (silicon), 2 (scintillator)
-  m_siDigi = std::unique_ptr<DDSiliconDigi>(new DDSiliconDigi("scinti", svcLoc())); 
+  //m_siDigi = std::unique_ptr<DDSiliconDigi>(new DDSiliconDigi("scinti", svcLoc())); 
 
   // small update for time-constant uncorrelated miscalibrations. DJ, Jan 2015
     if (m_applyEcalDigi == 1) {
-      e_out = m_siDigi->siliconDigi(energy);  // silicon digi
+      e_out = siliconDigi(energy);  // silicon digi
     } else if (m_applyEcalDigi == 2) {
-      e_out = m_scDigi->getDigitisedEnergy(energy);  // scintillator digi
+      e_out = getDigitisedEnergy(energy);  // scintillator digi
     } else if (m_applyEcalDigi != 0) {
       error() << "Could not identify m_applyDigi code. Please use 0 (none), 1 (silicon) or 2 (scintillator). Aborting." << endmsg;
       assert(0);
     }
   } else { // input collection is HCAL
     if (m_applyHcalDigi == 1) {
-      e_out = m_scDigi->getDigitisedEnergy(energy);  // scintillator digi
+      e_out = getDigitisedEnergy(energy);  // scintillator digi
     } else if (m_applyHcalDigi != 0) {
       error() << "Could not identify m_applyDigi code. Please use 0 (none), 1 (scintillator). Aborting." << endmsg;
       assert(0);

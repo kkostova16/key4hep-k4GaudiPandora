@@ -19,21 +19,19 @@
 #ifndef DDSILICONDIGI_H
 #define DDSILICONDIGI_H 1
 
-#include "Gaudi/Algorithm.h"
+#include "DDScCaloDigi.h"
 #include "Gaudi/Property.h"
 
-class DDSiliconDigi : public Gaudi::Algorithm {
+class DDSiliconDigi final : public DDScCaloDigi {
 public:
-  explicit DDSiliconDigi(const std::string&, ISvcLocator*);
+  DDSiliconDigi(const std::string& name, ISvcLocator* svcLoc);
   //~DDSiliconDigi() {}
-
-StatusCode execute(const EventContext&) const final;
 
 float siliconDigi(float energy) const;
 
 private:
 Gaudi::Property<float> m_ehEnergy{this, "EnergyPerEHpair", {3.6}, "Energy required to create e-h pair in silicon (in eV)"}; 
-Gaudi::Property<float> m_maxDynRangeMIP{this, "MaxDynamicRange_MIP", {2500.0}, "Maximum of electronis dynamic range (in MIP units)"};
+Gaudi::Property<float> m_elecMaxDynRange{this, "ElectronicsMaxDynamicRange_MIP", {2500.0}, "Maximum of electronis dynamic range (in MIP units)"};
 Gaudi::Property<float> m_elecNoise{this, "ElectronicsNoise_MIP", {0.0}, "Typical electronics noise (in MIP units)"};
 Gaudi::Property<float> m_calibMIP{this, "CalibrationMIP", {1.0e-4}, "Calibration to convert deposited energy to MIPs"};
 };
