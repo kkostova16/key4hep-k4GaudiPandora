@@ -22,9 +22,10 @@ set(_plugin_sources ${CMAKE_CURRENT_LIST_DIR}/
 					src/CalorimeterHitType.cc
 					# src/DDBFieldPlugin.cc
 					# src/DDCaloDigi.cc
-					src/DDBaseCaloDigi.cc
-					src/DDECalDigi.cc
-					src/DDHCalDigi.cc
+					# src/DDBaseCaloDigi.cc
+					# src/DDECalDigi.cc
+					# src/DDHCalDigi.cc
+					src/DDScCaloDigi.cc
 					# src/DDCaloHitCreator.cc
 					# src/DDExternalClusteringAlgorithm.cc
 					# src/DDGeometryCreator.cc
@@ -32,6 +33,7 @@ set(_plugin_sources ${CMAKE_CURRENT_LIST_DIR}/
 					# src/DDPandoraPFANewProcessor.cc
 					# src/DDPfoCreator.cc
 					src/DDScintillatorPpdDigi.cc
+					src/DDSiliconDigi.cc
 					# src/DDSimpleMuonDigi.cc
 					# src/DDTrackCreatorBase.cc
 					# src/DDTrackCreatorCLIC.cc

@@ -31,7 +31,8 @@ using std::endl;
 // Daniel Jeans, Jan/Feb 2014.
 // (split off from ILDCaloDigi Aug'14.)
 
-DDScintillatorPpdDigi::DDScintillatorPpdDigi() {}
+DDScintillatorPpdDigi::DDScintillatorPpdDigi(const std::string& aName, ISvcLocator* aSvcLoc) 
+  : Gaudi::Algorithm(aName, aSvcLoc) {}
 
 void DDScintillatorPpdDigi::printParameters() {
   cout << "--------------------------------" << endl;
@@ -114,7 +115,7 @@ float DDScintillatorPpdDigi::getDigitisedEnergy(float energy) {
     if (m_Npix > 0) {
       // 4. unfold the saturation
       // - miscalibration of Npix
-      float smearedNpix = m_misCalibNpix > 0 ? m_Npix * CLHEP::RandGauss::shoot(1.0, m_misCalibNpix) : m_Npix;
+      float smearedNpix = m_misCalibNpix > 0 ? static_cast<Gaudi::Property<float>> (m_Npix * CLHEP::RandGauss::shoot(1.0, m_misCalibNpix)) : m_Npix;
 
     //oh: commented out daniel's implmentation of dealing with hits>smearedNpix. using linearisation of saturation-reconstruction for high amplitude hits instead.
     /*

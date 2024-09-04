@@ -19,12 +19,15 @@
 #ifndef DDSCINTILLATORPPDDIGI_H
 #define DDSCINTILLATORPPDDIGI_H
 
+#include "Gaudi/Algorithm.h"
 #include "Gaudi/Property.h"
 
-class DDScintillatorPpdDigi {
+class DDScintillatorPpdDigi : public Gaudi::Algorithm {
 public:
-  DDScintillatorPpdDigi();
+  explicit DDScintillatorPpdDigi(const std::string& name, ISvcLocator* svcLoc);
   ~DDScintillatorPpdDigi() {}
+
+  StatusCode execute(const EventContext&) const final;
 
   // expected # photoelectrons / MIP
   void setPEperMIP(float x) { m_PEperMIP = x; }
@@ -51,11 +54,12 @@ public:
 
   float getDigitisedEnergy(float energy);
 
-private:
+  
+//private:
 
   Gaudi::Property<float> m_PEperMIP{this, "PPD_PE_per_MIP", {7.0}, "# photoelectrons per MIP (scintillator): used to poisson smear #PEs if > 0"};
   Gaudi::Property<float> m_calibMIP{this, "CalibrationMIP", {1.0e-4}, "Calibration to convert deposited energy to MIPs"};
-  Gaudi::Property<int>   m_Npix{this, "PPD_NPixels", {10000}, "Total number of MPPC/SiPM pixels for implementation of saturation effect"};
+  Gaudi::Property<float> m_Npix{this, "PPD_NPixels", {10000}, "Total number of MPPC/SiPM pixels for implementation of saturation effect"};
   Gaudi::Property<float> m_misCalibNpix{this, "PPD_NPixels_uncertainty", {0.05}, "Fractional uncertainty of effective total number of MPPC/SiPM pixels"};
   Gaudi::Property<float> m_pixSpread{this, "PixelSpread", {0.05}, "Variation of MPPC/SiPM pixels capacitance in ECAL/HCAL (as a fraction: 0.01=1%)"};
   Gaudi::Property<float> m_elecNoise{this, "ElectronicsNoise_MIP", {0.0}, "Typical electronics noise (in MIP units)"};
