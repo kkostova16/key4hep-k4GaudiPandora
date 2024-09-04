@@ -24,12 +24,12 @@
 
 class DDSiliconDigi : public Gaudi::Algorithm {
 public:
-  explicit DDSiliconDigi(const std::string& name, ISvcLocator* svcLoc);
+  explicit DDSiliconDigi(const std::string&, ISvcLocator*);
   //~DDSiliconDigi() {}
 
-float siliconDigi(float energy) const;
-
 StatusCode execute(const EventContext&) const final;
+
+float siliconDigi(float energy) const;
 
 private:
 Gaudi::Property<float> m_ehEnergy{this, "EnergyPerEHpair", {3.6}, "Energy required to create e-h pair in silicon (in eV)"}; 

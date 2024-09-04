@@ -21,10 +21,16 @@
 #include "CLHEP/Random/RandGauss.h"
 #include "CLHEP/Random/RandPoisson.h"
 
+DECLARE_COMPONENT(DDSiliconDigi)
+
 DDSiliconDigi::DDSiliconDigi(const std::string& aName, ISvcLocator* aSvcLoc) 
   : Gaudi::Algorithm(aName, aSvcLoc) {}
 
-  // this applies extra digitisation to silicon hits
+StatusCode DDSiliconDigi::execute(const EventContext&) const {
+  return StatusCode::SUCCESS;
+}
+
+// this applies extra digitisation to silicon hits
 float DDSiliconDigi::siliconDigi(float energy) const {
 
   // calculate #e-h pairs

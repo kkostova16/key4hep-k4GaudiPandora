@@ -24,8 +24,8 @@
 
 class DDScintillatorPpdDigi : public Gaudi::Algorithm {
 public:
-  explicit DDScintillatorPpdDigi(const std::string& name, ISvcLocator* svcLoc);
-  ~DDScintillatorPpdDigi() {}
+  explicit DDScintillatorPpdDigi(const std::string&, ISvcLocator*);
+  //~DDScintillatorPpdDigi() {}
 
   StatusCode execute(const EventContext&) const final;
 
@@ -51,6 +51,8 @@ public:
   void setElecRange(float x) { m_elecMaxDynRange = x; }
 
   void printParameters();
+
+  float convertThresholdUnits(std::string unitThreshold, float threshold);
 
   float getDigitisedEnergy(float energy);
 

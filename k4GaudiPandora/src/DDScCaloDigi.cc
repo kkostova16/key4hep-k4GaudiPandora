@@ -163,31 +163,22 @@ StatusCode DDScCaloDigi::initialize() {
     }
   }
 
-  // Convert thresholds to GeV units
-  if (m_unitThreshold.value().compare("GeV") == 0) {
-    // threshold unit is GeV, do nothing
-  } else if (m_unitThreshold.value().compare("MIP") == 0) {
-    // threshold unit is MIP, convert via MIP2GeV
-    m_threshold.value() *= m_calibMIP.value();
-  } else if (m_unitThreshold.value().compare("px") == 0) {
-    // threshold unit is pixels, convert via MIP2GeV and lightyield
-    m_threshold.value() *= m_PEperMIP.value() * m_calibMIP.value();
-  } else {
-    error() << "Could not identify threshold unit. Please use \"GeV\", \"MIP\" or \"px\"! Aborting." << endmsg;
-    assert(0);
-  }
-
+  
   // Set up the scintillator/MPPC digitizer
-  m_scDigi = std::unique_ptr<DDScintillatorPpdDigi>(new DDScintillatorPpdDigi()); 
-  m_scDigi->setPEperMIP(m_PEperMIP);
-  m_scDigi->setCalibMIP(m_calibMIP);
-  m_scDigi->setNPix(m_Npix);
-  m_scDigi->setRandomMisCalibNPix(m_misCalibNpix);
-  m_scDigi->setPixSpread(m_pixSpread);
-  m_scDigi->setElecNoise(m_elecNoise);
-  m_scDigi->setElecRange(m_elecMaxDynRange);
+  m_scDigi = std::unique_ptr<DDScintillatorPpdDigi>(new DDScintillatorPpdDigi("scinti", svcLoc())); 
+  //m_scDigi->setPEperMIP(m_PEperMIP);
+  //m_scDigi->setCalibMIP(m_calibMIP);
+  //m_scDigi->setNPix(m_Npix);
+  //m_scDigi->setRandomMisCalibNPix(m_misCalibNpix);
+  //m_scDigi->setPixSpread(m_pixSpread);
+  //m_scDigi->setElecNoise(m_elecNoise);
+  //m_scDigi->setElecRange(m_elecMaxDynRange);
   cout << "Scintillator digi:" << endl;
   m_scDigi->printParameters();
+  
+  // Convert thresholds to GeV units
+  m_scDigi->convertThresholdUnits(m_unitThreshold, m_threshold);
+
 
   // Set up the random engines for ECAL/HCAL dead cells: (could use a steering parameter though)
   if (m_deadCell_keep) {
@@ -261,35 +252,35 @@ retType DDScCaloDigi::operator()(
   //
   // * Reading Collections of Simulated Hits *
   //  
-    for (const auto& hit : simCaloHitCollection) {
-      const int cellID = hit.getCellID();
-      float energy = hit.getEnergy();
+  for (const auto& hit : simCaloHitCollection) {
+    const int cellID = hit.getCellID();
+    float energy = hit.getEnergy();
           
-      // get threshold value
-      float threshold = 0.;
-      if (m_inputColIsECAL) {
-	threshold = m_threshold;
-      } else {
-	threshold = m_threshold/2;
-      }
-      // apply threshold cut
-      if (energy > threshold) {
+  // get threshold value
+  float threshold = 0.;
+  if (m_inputColIsECAL) {
+    threshold = m_threshold;
+  } else {
+    threshold = m_threshold/2;
+  }
+  // apply threshold cut
+  if (energy > threshold) {
 	// int cellID = hit.getCellID();
-        unsigned int layer  = bitFieldCoder.get(cellID, "layer");
-        unsigned int stave  = bitFieldCoder.get(cellID, "stave");
-        unsigned int module = bitFieldCoder.get(cellID, "module");
+  unsigned int layer  = bitFieldCoder.get(cellID, "layer");
+  unsigned int stave  = bitFieldCoder.get(cellID, "stave");
+  unsigned int module = bitFieldCoder.get(cellID, "module");
 
-        // check that layer and assumed layer type are compatible
-        checkConsistency(colName, layer);
+  // check that layer and assumed layer type are compatible
+  checkConsistency(colName, layer);
 
-        // save hits by module/stave/layer if required later ???
+  // save hits by module/stave/layer if required later ???
 
-        float x    = hit.getPosition()[0];
-        float y    = hit.getPosition()[1];
-        float z    = hit.getPosition()[2];
-        float r    = sqrt(x * x + y * y + z * z); // this is a crude approximation - assumes initial particle originated at the very center of the detector.
-        float rxy  = sqrt(x * x + y * y);
-        float cost = fabs(z) / r;
+  float x    = hit.getPosition()[0];
+  float y    = hit.getPosition()[1];
+  float z    = hit.getPosition()[2];
+  float r    = sqrt(x * x + y * y + z * z); // this is a crude approximation - assumes initial particle originated at the very center of the detector.
+  float rxy  = sqrt(x * x + y * y);
+  float cost = fabs(z) / r;
 
         // fill ECAL Layer histograms ???
         //if (z > 0) {
@@ -311,7 +302,7 @@ retType DDScCaloDigi::operator()(
         float calibr_coeff = 1.;
         if (m_digitalCalo) {  // -- use digital calibration
 	  if (m_inputColIsECAL) {  // input collection is ECAL
-	     calibr_coeff = this->digitalCalibCoeff(layer);
+	     calibr_coeff = this->digitalCalibCoeff(caloLayout, energy);
 	     // now this is only for ECAL - why?
 	     if (m_mapsCalCorrection) {
 	       if (caloLayout == CHT::barrel) {
@@ -327,7 +318,7 @@ retType DDScCaloDigi::operator()(
 	  }
 	} else {  // if m_digitalCal = false -- use analogue calibration
 	  if (m_inputColIsECAL) {  // input collection is ECAL
-	    calibr_coeff = this->analogueCalibCoeff(layer);
+	    calibr_coeff = this->analogueCalibCoeff(caloLayout, layer);
 	  } else {  // input collection is HCAL
 	    calibr_coeff = this->digitalCalibCoeff(caloLayout, energy);
 	  }
@@ -813,10 +804,10 @@ float DDScCaloDigi::EnergyDigi(float energy, int id) const {
   if (m_inputColIsECAL) { // input collection is ECAL
   // some extra digi effects (daniel)
   // controlled by m_applyEcalDigi = 0 (none), 1 (silicon), 2 (scintillator)
+  m_siDigi = std::unique_ptr<DDSiliconDigi>(new DDSiliconDigi("scinti", svcLoc())); 
 
   // small update for time-constant uncorrelated miscalibrations. DJ, Jan 2015
     if (m_applyEcalDigi == 1) {
-      m_siDigi = std::unique_ptr<DDSiliconDigi>(new DDSiliconDigi()); 
       e_out = m_siDigi->siliconDigi(energy);  // silicon digi
     } else if (m_applyEcalDigi == 2) {
       e_out = m_scDigi->getDigitisedEnergy(energy);  // scintillator digi

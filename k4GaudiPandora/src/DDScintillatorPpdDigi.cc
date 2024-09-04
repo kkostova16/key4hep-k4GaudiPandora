@@ -25,6 +25,8 @@
 using std::cout;
 using std::endl;
 
+DECLARE_COMPONENT(DDScintillatorPpdDigi)
+
 // this applies some extra digitisation to scintillator+PPD hits (PPD=SiPM, MPPC)
 // - poisson fluctuates the number of photo-electrons according to #PEs/MIP
 // - applies PPD saturation according to #pixels
@@ -33,6 +35,10 @@ using std::endl;
 
 DDScintillatorPpdDigi::DDScintillatorPpdDigi(const std::string& aName, ISvcLocator* aSvcLoc) 
   : Gaudi::Algorithm(aName, aSvcLoc) {}
+
+StatusCode DDScintillatorPpdDigi::execute(const EventContext&) const {
+  return StatusCode::SUCCESS;
+}
 
 void DDScintillatorPpdDigi::printParameters() {
   cout << "--------------------------------" << endl;
@@ -46,6 +52,24 @@ void DDScintillatorPpdDigi::printParameters() {
   cout << " elecMaxDynRange = " << m_elecMaxDynRange << endl;
   cout << "--------------------------------" << endl;
   return;
+}
+
+// Convert thresholds to GeV units
+float DDScintillatorPpdDigi::convertThresholdUnits(std::string unitThreshold, float threshold) {
+
+  if (unitThreshold.compare("GeV") == 0) {
+    // threshold unit is GeV, do nothing
+  } else if (unitThreshold.compare("MIP") == 0) {
+    // threshold unit is MIP, convert via MIP2GeV
+    threshold *= m_calibMIP.value();
+  } else if (unitThreshold.compare("px") == 0) {
+    // threshold unit is pixels, convert via MIP2GeV and lightyield
+    threshold *= m_PEperMIP.value() * m_calibMIP.value();
+  } else {
+    error() << "Could not identify threshold unit. Please use \"GeV\", \"MIP\" or \"px\"! Aborting." << endmsg;
+    assert(0);
+  }
+  return threshold; // in GeV units
 }
 
 float DDScintillatorPpdDigi::getDigitisedEnergy(float energy) {
