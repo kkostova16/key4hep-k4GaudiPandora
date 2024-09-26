@@ -62,13 +62,13 @@ relcollections = [["RelationCaloHitECALBarrel"],
 
 #set properties
 for calodigicol, ecalorhcal, inputcol, outputcol, relcol in zip(calodigi, ECALorHCAL, inputcollections, outputcollections, relcollections):
-    
+
     calodigicol.InputColIsECAL = ecalorhcal                 # True -- ECAL // False -- HCAL
     calodigicol.InputCaloHitCollection = inputcol           # "ECalBarrelCollection","ECalEndcapCollection"
                                                             # "HCalBarrelCollection","HCalEndcapCollection","HCalRingCollection"
     calodigicol.OutputCaloHitCollection = outputcol
     calodigicol.RelCollection = relcol
-    
+
     # digitazing parameters for ECAL and HCAL
     calodigicol.ECALThreshold = 5.0e-5
     calodigicol.ECALThresholdUnit = "GeV"
@@ -84,7 +84,7 @@ for calodigicol, ecalorhcal, inputcol, outputcol, relcol in zip(calodigi, ECALor
     calodigicol.MapsEcalCorrection = 0
     calodigicol.IfDigitalHcal = 0
     calodigicol.ECALGapCorrection = 1
-    calodigicol.ECALGapCorrection = 1
+    calodigicol.HCALGapCorrection = 1
     calodigicol.ECALEndcapCorrectionFactor = 1.03245503522
     calodigicol.HCALEndcapCorrectionFactor = 1.000
     calodigicol.ECALGapCorrectionFactor = 1.0
@@ -93,7 +93,7 @@ for calodigicol, ecalorhcal, inputcol, outputcol, relcol in zip(calodigi, ECALor
 
     # timing parameters for ECAL
     calodigicol.UseEcalTiming = 1
-    calodigicol.ECALCorrectTimesForPropagation = 1 
+    calodigicol.ECALCorrectTimesForPropagation = 1
     calodigicol.ECALTimeWindowMin = -1.0
     calodigicol.ECALEndcapTimeWindowMax = 10.0
     calodigicol.ECALBarrelTimeWindowMax = 10.0
@@ -140,7 +140,7 @@ for calodigicol, ecalorhcal, inputcol, outputcol, relcol in zip(calodigi, ECALor
     calodigicol.HCAL_miscalibration_uncorrel_memorise = False
     calodigicol.HCAL_miscalibration_correl = 0.0
     calodigicol.HCAL_deadCellRate = 0.0
-    calodigicol.HCAL_deadCell_memorise = False 
+    calodigicol.HCAL_deadCell_memorise = False
     calodigicol.HCAL_pixel_spread = 0.0
     calodigicol.HCAL_elec_noise_mips = 0.0
     calodigicol.HCAL_maxDynamicRange_MIP = 200.0
